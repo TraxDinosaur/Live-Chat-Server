@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Chat Server</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+    }
+
+    .chat-container {
+      max-width: 800px;
+      margin: 50px auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+    }
+
+    .chat-area {
+      flex-grow: 1;
+      overflow-y: scroll;
+      padding: 20px;
+    }
+
+    .message {
+      padding: 10px 15px;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      max-width: 70%;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      color: white;
+    }
+
+    .message.received {
+      align-self: flex-start;
+    }
+
+    .message.system {
+      color: #888;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .message.sent::after {
+      content: "";
+      position: absolute;
+      border-style: solid;
+      border-width: 8px 10px 8px 0;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .message.received::before {
+      content: "";
+      position: absolute;
+      border-style: solid;
+      border-width: 8px 0 8px 10px;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .message-text {
+      margin: 0;
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+
+    .message-input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .send-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .send-button:hover {
+      background-color: #45a049;
+    }
+
+    .name-input {
+      padding: 10px;
+      margin: 20px auto;
+      display: block;
+      text-align: center;
+    }
+
+    .submit-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+
+    .submit-button:hover {
+      background-color: #45a049;
+    }
+
+    @media screen and (max-width: 600px) {
+      .chat-container {
+        margin: 20px auto;
+        border-radius: 0;
+        height: 100vh;
+      }
+
+      .chat-area {
+        padding: 10px;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+    }
+
+    /* Additional CSS for dynamically generated colors */
+    .message.sent[data-sender="Me"] {
+      background-color: #4caf50;
+    }
+
+    .message.received[data-sender="system"] {
+      background-color: #e1ffc7;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let userName = '';
+    let userColor = getRandomColor();
+
+    function initializeChat() {
+      const secretCode = 'joinrexnetwork';
+      const enteredCode = document.getElementById('codeInput').value;
+
+      if (enteredCode !== secretCode) {
+        alert('Invalid secret code. Access denied.');
+        return;
+      }
+
+      userName = document.getElementById('nameInput').value;
+      if (userName.trim() === '') {
+        alert('Please enter your name to continue.');
+        return;
+      }
+
+      document.getElementById('authPrompt').style.display = 'none';
+      document.getElementById('chatContainer').style.display = 'flex';
+
+      displayMessage(`Welcome, ${userName}! Enjoy the chat and join @rexnetwork.`, 'system');
+    }
+
+    socket.on('message', (data) => {
+      displayMessage(data.message, data.sender, data.color);
+    });
+
+    function sendMessage() {
+      const message = document.getElementById('messageInput').value;
+      socket.emit('message', { message: message, sender: userName, color: userColor });
+      document.getElementById('messageInput').value = '';
+    }
+
+    function displayMessage(message, sender, color) {
+      const chatArea = document.getElementById('chatArea');
+      const newMessage = document.createElement('div');
+      newMessage.classList.add('message');
+      newMessage.dataset.sender = sender;
+
+      let messageContent = `<strong>${sender}:</strong> ${message}`;
+
+      if (sender === userName) {
+        newMessage.classList.add('sent');
+        newMessage.dataset.sender = "Me";
+      } else if (sender === 'system') {
+        newMessage.classList.add('system');
+        messageContent = message; // System messages won't display sender's name
+      } else {
+        newMessage.classList.add('received');
+      }
+
+      if (color) {
+        newMessage.style.backgroundColor = color;
+      }
+
+      newMessage.innerHTML = messageContent;
+
+      chatArea.appendChild(newMessage);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    const messageInput = document.getElementById('messageInput');
+    messageInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+  </script>
+</head>
+<body>
+  <div id="authPrompt">
+    <input type="text" id="codeInput" class="name-input" placeholder="Enter secret code...">
+    <input type="text" id="nameInput" class="name-input" placeholder="Enter your name...">
+    <button onclick="initializeChat()" class="submit-button">Start Chatting</button>
+  </div>
+
+  <div id="chatContainer" class="chat-container" style="display: none;">
+    <div id="chatArea" class="chat-area">
+    </div>
+    <div class="input-container">
+      <input type="text" id="messageInput" class="message-input" placeholder="Type a message...">
+      <button onclick="sendMessage()" class="send-button">Send</button>
+    </div>
+  </div>
+</body>
+</html>
