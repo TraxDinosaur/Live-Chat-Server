@@ -17,7 +17,7 @@ Thank you for considering contributing to the Live Chat Server! Contributions ar
 
 1. Fork the repository and clone it to your local machine.
    ```bash
-   git clone https://github.com/yourusername/live-chat-server.git
+   git clone https://github.com/TraxDinosaur/live-chat-server.git
    ```
 
 2. Create a new branch for your feature or bug fix.
