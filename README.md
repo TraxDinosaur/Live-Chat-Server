@@ -43,6 +43,12 @@ To set up the Live Chat Server locally, follow these steps:
 
 6. Access the application in your web browser at `http://localhost:5000`.
 
+#### How to Run in Replit 🌐
+
+To experience Live-Chat-Server in Replit, simply click the button below:
+
+[![Run in Replit](https://replit.com/badge/github/TraxDinosaur/Live-Chat-Server)](https://replit.com/@TraxDinosaur/Live-Chat-Server)
+
 ## Usage
 
 1. Enter the secret code to authenticate and join the chat.
